@@ -1,0 +1,96 @@
+let values = [];
+
+// 1. Extração de valores da métrica.
+context.panel.data.series.map((s) => {
+  if (s.fields.some(f => f.type === 'number')) {
+    // O primeiro valor numérico (values[0]) é utilizado para definir a cor e o preenchimento (percentual de 0 a 100).
+    values = s.fields.find((f) => f.type === 'number').values;
+  }
+});
+
+// 2. Determina o valor principal da métrica para a lógica de seleção de cores.
+const metricValue = values.length > 0 ? values[0] : 0;
+
+// 3. Definição das paletas de cores (três tons por estado) e das cores de contorno/fundo.
+const bluePalette = ['#66CCFF', '#3399FF', '#0066CC'];     // Cores internas do líquido (Tons Azuis)
+const orangePalette = ['#FFD699', '#FFB266', '#FF8C33']; // Cores internas do líquido (Tons Laranjas)
+const redPalette = ['#FF9999', '#FF6666', '#CC0000'];     // Cores internas do líquido (Tons Vermelhos)
+
+let selectedPalette = bluePalette;
+let primaryColor = '#3399FF';     // Cor primária para o contorno (padrão)
+let backgroundColor = '#E0F0FF';  // Cor de fundo (porção não preenchida, padrão)
+
+// 4. Lógica condicional para seleção da paleta de cores e cores de estilo.
+if (metricValue >= 71) {
+  // (Vermelho) 71% a 100% (Crítico)
+  selectedPalette = redPalette;
+  primaryColor = '#CC0000';
+  backgroundColor = '#FFEEEE';
+} else if (metricValue >= 41) {
+  // (Laranja) 41% a 70% (Alerta)
+  selectedPalette = orangePalette;
+  primaryColor = '#FF8C33';
+  backgroundColor = '#FFF0E0';
+} else {
+  // (Azul) 0% a 40% (Ótimo)
+  selectedPalette = bluePalette;
+  primaryColor = '#3399FF';
+  backgroundColor = '#E0F0FF';
+}
+
+// 5. Preparação dos dados para as 3 ondas.
+const numberOfWaves = 3;
+const liquidData = [];
+
+for (let i = 0; i < numberOfWaves; i++) {
+  // Calcula o valor da onda (entre 0.0 e 1.0). Se houver múltiplos valores, usa o valor específico.
+  const waveValue = values.length > i ? values[i] / 100 : metricValue / 100;
+
+  liquidData.push({
+    value: waveValue,
+    itemStyle: {
+      color: selectedPalette[i % selectedPalette.length] // Aplica o tom da paleta
+    }
+  });
+}
+
+// 6. Retorna o objeto de configuração do ECharts.
+return {
+  series: [{
+    type: 'liquidFill',
+    radius: '90%', // Define o medidor como circular.
+    data: liquidData, // Array com as 3 ondas e suas cores dinâmicas.
+
+    // Configuração da Borda Externa (Outline)
+    outline: {
+      show: true,
+      borderDistance: 0,
+      itemStyle: {
+        borderColor: primaryColor, // A cor da borda é alterada dinamicamente com base no valor da métrica.
+        borderWidth: 5,
+        shadowBlur: 0
+      }
+    },
+
+    // Configuração do Background (Área não preenchida)
+    backgroundStyle: {
+      color: backgroundColor, // A cor de fundo é alterada dinamicamente com base no valor da métrica.
+      opacity: 0.5
+    },
+    
+    // Configuração do Rótulo (Número Central)
+    label: {
+        show: true,
+        position: 'inside',
+        formatter: function () {
+            // Retorna o valor principal arredondado para exibição.
+            return Math.round(metricValue) + '%';
+        },
+        textStyle: {
+            fontSize: 40,
+            fontWeight: 'bold',
+            color: 'inherit' 
+        }
+    }
+  }]
+};
