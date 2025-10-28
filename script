@@ -1,0 +1,123 @@
+let values = [];
+
+// 1. Extrai os valores da métrica (Apenas o primeiro valor é usado).
+// Assume-se que 'context.panel.data' contém séries de dados 
+context.panel.data.series.map((s) => {
+  if (s.fields.some(f => f.type === 'number')) {
+    // Encontra o primeiro campo numérico
+    values = s.fields.find((f) => f.type === 'number').values;
+  }
+});
+
+// 2. Define o valor da métrica principal e ARREDONDA para inteiro
+// Assumimos que o valor já vem como 0-100 (porcentagem).
+const rawMetricValue = values.length > 0 ? values[0] : 0;
+const metricValue = Math.round(rawMetricValue);
+
+// 3. Paletas de cores (Ajustadas para mais profundidade e vibrantes como no exemplo desejado)
+// Blue
+const bluePalette = ['#003366', '#0077CC', '#0099FF', '#33CCFF'];
+// Orange
+const orangePalette = ['#995000', '#FF8C33', '#FFA050', '#FFC880'];
+// Red
+const redPalette = ['#800000', '#CC0000', '#FF3333', '#FF6666'];
+
+
+let selectedPalette = bluePalette;
+let primaryColor = '#005CB8'; // Contorno azul forte inicial
+let backgroundColor = '#F0F8FF'; // Fundo branco-azul claro inicial
+
+// 4. Lógica de seleção de cor com base no valor arredondado
+if (metricValue >= 71) {
+  selectedPalette = redPalette;
+  primaryColor = '#CC0000'; // Vermelho para contorno
+  backgroundColor = '#FFEEEE'; // Fundo vermelho claro
+} else if (metricValue >= 41) {
+  selectedPalette = orangePalette;
+  primaryColor = '#FF8C33'; // Laranja para contorno
+  backgroundColor = '#FFF0E0'; // Fundo laranja claro
+} else {
+  selectedPalette = bluePalette;
+  primaryColor = '#005CB8'; // Azul forte para contorno
+  backgroundColor = '#F0F8FF'; // Fundo branco-azul claro
+}
+
+// 5. Prepara os dados para as ondas
+const numberOfWaves = 4; // Quatro ondas para efeito de profundidade
+const liquidData = [];
+
+for (let i = 0; i < numberOfWaves; i++) {
+  // O valor para o Liquid Fill deve estar entre 0.0 e 1.0.
+  const waveValue = rawMetricValue / 100;
+
+  liquidData.push({
+    value: waveValue,
+    itemStyle: {
+      // Cicla pelas cores da paleta selecionada
+      color: selectedPalette[i % selectedPalette.length]
+    },
+    // Ajustes para visual mais dinâmico
+    waveAnimation: true,
+    animationDuration: 3000 + (i * 500),
+    animationDurationUpdate: 2000,
+    waveLength: '80%',
+    waveHeight: i === 0 ? '5%' : '8%'
+  });
+}
+
+// 6. Retorna a configuração do ECharts
+return {
+  series: [{
+    type: 'liquidFill',
+
+    // CHAVE PARA ADAPTAÇÃO RETANGULAR: 'container' garante que ele
+    // use 100% da largura e altura do bloco
+    shape: 'container',
+
+    data: liquidData,
+
+    outline: {
+      show: true,
+      borderDistance: 0,
+      itemStyle: {
+        borderColor: primaryColor, // Cor de contorno dinâmica
+        borderWidth: 5,
+        shadowBlur: 0,
+      }
+    },
+
+    backgroundStyle: {
+      // Cor de fundo dinâmica
+      color: backgroundColor,
+      opacity: 1 
+    },
+
+    label: {
+      show: true,
+      // Posição centralizada
+      position: ['50%', '50%'],
+      align: 'center',
+      formatter: function () {
+        return metricValue + '%';
+      },
+      // CONFIGURAÇÃO DO TEXTO FORA DA ONDA
+      textStyle: {
+        fontSize: 50,
+        fontWeight: 'bold',
+        color: '#000', // Cor do texto FORA da onda (PRETO)
+        textShadow: 'none' // Sem sombra no texto preto para maior clareza
+      },
+      // CONFIGURAÇÃO DO TEXTO DENTRO DA ONDA (NOVO)
+      insideText: {
+          show: true,
+          textStyle: {
+              fontSize: 50,
+              fontWeight: 'bold',
+              color: '#FFF', // Cor do texto DENTRO da onda (BRANCO)
+              // Sombra para contraste contra as ondas escuras
+              textShadow: '0 0 5px rgba(0, 0, 0, 0.5)'
+          }
+      }
+    }
+  }]
+};
