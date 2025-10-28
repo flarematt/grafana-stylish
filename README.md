@@ -1,4 +1,4 @@
-# 🌊 Grafana Business Charts: Liquid Fill Gauge Dinâmico (SLA)
+# 🌊 Grafana Business Charts: Liquid Fill Gauge Dinâmico (SLA) - Formato ▢
 
 Este é um script JavaScript (opção ECharts) para o painel **Business Charts** (Volkov Labs) do Grafana, que implementa um medidor de preenchimento líquido (`liquidFill`) com cores dinâmicas baseadas em faixas de status (SLA).
 
