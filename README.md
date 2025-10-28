@@ -19,4 +19,4 @@ Ele transforma uma única métrica percentual (assumida entre 0% e 100%) em uma 
 1.  **Instale o Plugin:** Certifique-se de ter o plugin **Business Charts** (`volkovlabs-echarts-panel`) instalado no seu Grafana.
 2.  **Adicione o Painel:** Adicione um novo painel e selecione o tipo **Business Charts**.
 3.  **Configure a Query:** Adicione sua query que retorna o valor percentual (0-100).
-4.  **Insira o Código:** Vá para as configurações do painel, selecione a aba **Code** e cole o conteúdo completo do arquivo `liquidFillGauge.js` (abaixo) na seção de código JavaScript/ECharts.
+4.  **Insira o Código:** Vá para as configurações do painel e cole o conteúdo completo do arquivo `liquidFillGauge.js` (abaixo) na seção de código  (Function) JavaScript/ECharts.
